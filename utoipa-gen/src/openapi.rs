@@ -16,6 +16,7 @@ use crate::{
     ExternalDocs,
 };
 
+
 mod info;
 
 #[derive(Default)]
@@ -27,7 +28,7 @@ pub struct OpenApiAttr {
     security: Option<Array<SecurityRequirementAttr>>,
     tags: Option<Array<Tag>>,
     external_docs: Option<ExternalDocs>,
-    scope: Option<String>,
+    scope: Option<Str>,
 }
 
 pub fn parse_openapi_attrs(attrs: &[Attribute]) -> Option<OpenApiAttr> {
@@ -75,7 +76,7 @@ impl Parse for OpenApiAttr {
                     openapi.external_docs = Some(external_docs.parse()?);
                 }
                 "scope" => {
-                    openapi.scope = input.parse()?
+                    openapi.scope = Some(input.parse()?);
                 }
                 _ => {
                     return Err(Error::new(ident.span(), EXPECTED_ATTRIBUTE));
@@ -146,6 +147,10 @@ impl Parse for Modifier {
 
 #[derive(Default)]
 #[cfg_attr(feature = "debug", derive(Debug))]
+struct Str(String);
+
+#[derive(Default)]
+#[cfg_attr(feature = "debug", derive(Debug))]
 struct Tag {
     name: String,
     description: Option<String>,
@@ -207,6 +212,12 @@ impl ToTokens for Tag {
         }
 
         tokens.extend(quote! { .build() })
+    }
+}
+
+impl Parse for Str {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(input.parse()?)
     }
 }
 
@@ -318,7 +329,7 @@ fn impl_components(
     }
 }
 
-fn impl_paths(handler_paths: &Punctuated<ExprPath, Comma>, scope: &Option<String>) -> TokenStream {
+fn impl_paths(handler_paths: &Punctuated<ExprPath, Comma>, scope: &Option<Str>) -> TokenStream {
     handler_paths.iter().fold(
         quote! { utoipa::openapi::path::PathsBuilder::new() },
         |mut paths, handler| {
@@ -333,9 +344,9 @@ fn impl_paths(handler_paths: &Punctuated<ExprPath, Comma>, scope: &Option<String
                 .join("::");
 
 
-            let mut handler_ident;
+            let handler_ident;
             if let Some(scope) = scope {
-                handler_ident = format_ident!("{}{}{}", PATH_STRUCT_PREFIX, scope, handler_fn_name);
+                handler_ident = format_ident!("{}{}{}", PATH_STRUCT_PREFIX, scope.0, handler_fn_name);
             } else {
                 handler_ident = format_ident!("{}{}", PATH_STRUCT_PREFIX, handler_fn_name);
             }
