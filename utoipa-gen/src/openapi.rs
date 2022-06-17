@@ -27,6 +27,7 @@ pub struct OpenApiAttr {
     security: Option<Array<SecurityRequirementAttr>>,
     tags: Option<Array<Tag>>,
     external_docs: Option<ExternalDocs>,
+    scope: Option<String>,
 }
 
 pub fn parse_openapi_attrs(attrs: &[Attribute]) -> Option<OpenApiAttr> {
@@ -228,7 +229,7 @@ impl ToTokens for OpenApi {
             };
         });
 
-        let path_items = impl_paths(&attributes.handlers);
+        let path_items = impl_paths(&attributes.handlers, &attributes.scope);
 
         let securities = attributes.security.as_ref().map(|securities| {
             quote! {
@@ -314,7 +315,7 @@ fn impl_components(
     }
 }
 
-fn impl_paths(handler_paths: &Punctuated<ExprPath, Comma>) -> TokenStream {
+fn impl_paths(handler_paths: &Punctuated<ExprPath, Comma>, scope: Option<String>) -> TokenStream {
     handler_paths.iter().fold(
         quote! { utoipa::openapi::path::PathsBuilder::new() },
         |mut paths, handler| {
@@ -328,7 +329,14 @@ fn impl_paths(handler_paths: &Punctuated<ExprPath, Comma>) -> TokenStream {
                 .collect::<Vec<_>>()
                 .join("::");
 
-            let handler_ident = format_ident!("{}{}", PATH_STRUCT_PREFIX, handler_fn_name);
+
+            let mut handler_ident;
+            if let Some(scope) = scope {
+                handler_ident = format_ident!("{}{}{}", PATH_STRUCT_PREFIX, scope, handler_fn_name);
+            } else {
+                handler_ident = format_ident!("{}{}", PATH_STRUCT_PREFIX, handler_fn_name);
+            }
+
             let handler_ident_name = &*handler_ident.to_string();
 
             let usage = syn::parse_str::<ExprPath>(
