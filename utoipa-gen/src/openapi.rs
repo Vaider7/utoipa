@@ -315,7 +315,7 @@ fn impl_components(
     }
 }
 
-fn impl_paths(handler_paths: &Punctuated<ExprPath, Comma>, scope: Option<String>) -> TokenStream {
+fn impl_paths(handler_paths: &Punctuated<ExprPath, Comma>, scope: &Option<String>) -> TokenStream {
     handler_paths.iter().fold(
         quote! { utoipa::openapi::path::PathsBuilder::new() },
         |mut paths, handler| {
