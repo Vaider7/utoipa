@@ -166,7 +166,7 @@ impl Parse for Tag {
 
         while !input.is_empty() {
             let ident = input.parse::<Ident>().map_err(|error| {
-                syn::Error::new(error.span(), &format!("{}, {}", EXPECTED_ATTRIBUTE, error))
+                Error::new(error.span(), &format!("{}, {}", EXPECTED_ATTRIBUTE, error))
             })?;
             let attribute_name = &*ident.to_string();
 
@@ -217,7 +217,7 @@ impl ToTokens for Tag {
 
 impl Parse for Str {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        Ok(input.parse()?)
+        Ok(Str(parse_utils::parse_next_literal_str(input)?))
     }
 }
 
