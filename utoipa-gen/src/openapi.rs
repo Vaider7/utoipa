@@ -73,7 +73,7 @@ impl Parse for OpenApiAttr {
                     let external_docs;
                     parenthesized!(external_docs in input);
                     openapi.external_docs = Some(external_docs.parse()?);
-                },
+                }
                 "scope" => {
                     openapi.scope = input.parse()?
                 }
