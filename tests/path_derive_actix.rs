@@ -125,7 +125,7 @@ mod mod_derive_path_named_regex_actix {
 #[test]
 fn derive_path_with_named_regex_actix_success() {
     #[derive(OpenApi, Default)]
-    #[openapi(handlers(mod_derive_path_named_regex_actix::get_foo_by_id))]
+    #[openapi(handlers(mod_derive_path_named_regex_actix::get_foo_by_id), scope="/api/v1")]
     struct ApiDoc;
 
     let doc = serde_json::to_value(ApiDoc::openapi()).unwrap();
