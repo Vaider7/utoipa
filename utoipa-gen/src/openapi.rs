@@ -344,19 +344,24 @@ fn impl_paths(handler_paths: &Punctuated<ExprPath, Comma>, scope: &Option<Str>) 
                 .join("::");
 
 
-            let handler_ident;
+
+            let handler_ident = format_ident!("{}{}", PATH_STRUCT_PREFIX, handler_fn_name);
+
+            let handler_ident_unchecked = &*handler_ident.to_string();
+
+            let handler_ident_name;
+
             if let Some(scope) = scope {
-                handler_ident = format_ident!("{}{}{}", PATH_STRUCT_PREFIX, scope.0, handler_fn_name);
+                handler_ident_name = format!("{}{}", scope.0, handler_ident_unchecked)
             } else {
-                handler_ident = format_ident!("{}{}", PATH_STRUCT_PREFIX, handler_fn_name);
+                handler_ident_name = handler_ident_unchecked.to_string()
             }
 
-            let handler_ident_name = &*handler_ident.to_string();
 
             let usage = syn::parse_str::<ExprPath>(
                 &vec![
                     if tag.is_empty() { None } else { Some(tag) },
-                    Some(handler_ident_name),
+                    Some(handler_ident_name.as_str()),
                 ]
                 .into_iter()
                 .flatten()
