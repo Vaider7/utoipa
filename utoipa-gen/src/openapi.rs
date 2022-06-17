@@ -365,7 +365,7 @@ fn impl_paths(handler_paths: &Punctuated<ExprPath, Comma>, scope: &Option<Str>) 
             if let Some(scope) = scope {
                 let string = &scope.0;
                 paths.extend(quote! {
-                    .path(#string.0#usage::path(), #usage::path_item(Some(#tag)))
+                    .path(format!("{}{}", #string.0, #usage::path()), #usage::path_item(Some(#tag)))
                 });
             } else {
                 paths.extend(quote! {
